@@ -1,0 +1,24 @@
+# One-time job: copies the public files of the live website into this branch so the full
+# site source can be rebuilt. Runs once, then this file and branch are deleted.
+name: restore-site-files
+on:
+  push:
+    branches: [restore]
+    paths: ['.github/workflows/restore.yml']
+permissions:
+  contents: write
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download public files from the live site
+        working-directory: restore
+        run: bash restore-files.sh
+      - name: Commit the files
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add restore
+          git commit -m "Restored public site files" || echo "nothing to commit"
+          git push origin restore
